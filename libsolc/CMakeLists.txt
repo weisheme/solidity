@@ -1,0 +1,8 @@
+if (EMSCRIPTEN)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s EXPORTED_FUNCTIONS='[\"_compileJSON\",\"_license\",\"_version\",\"_compileJSONMulti\",\"_compileJSONCallback\",\"_compileStandard\"]' -s RESERVED_FUNCTION_POINTERS=20")
+	add_executable(libsolc libsolc.cpp)
+else()
+	add_library(libsolc SHARED libsolc.cpp)
+	set_target_properties(libsolc PROPERTIES OUTPUT_NAME solc)
+endif()
+target_link_libraries(libsolc PRIVATE solidity)
