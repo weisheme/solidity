@@ -104,7 +104,7 @@ private:
 	std::map<Declaration const*, int> m_currentSequenceCounter;
 	std::map<Declaration const*, int> m_nextFreeSequenceCounter;
 	std::map<Expression const*, smt::Expression> m_Expressions;
-	std::map<Declaration const*, smt::Expression> m_Variables;
+	std::map<Declaration const*, smt::Expression> m_variables;
 	ErrorReporter& m_errorReporter;
 
 	FunctionDefinition const* m_currentFunction = nullptr;
