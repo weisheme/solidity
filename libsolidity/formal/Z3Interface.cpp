@@ -89,7 +89,7 @@ pair<CheckResult, vector<string>> Z3Interface::check(vector<Expression> const& _
 	}
 
 	vector<string> values;
-	if (result != CheckResult::UNSATISFIABLE)
+	if (result != CheckResult::UNSATISFIABLE && !_expressionsToEvaluate.empty())
 	{
 		z3::model m = m_solver.get_model();
 		for (Expression const& e: _expressionsToEvaluate)
