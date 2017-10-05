@@ -118,7 +118,8 @@ z3::expr Z3Interface::toZ3Expr(Expression const& _expr)
 		{">=", 2},
 		{"+", 2},
 		{"-", 2},
-		{"*", 2}
+		{"*", 2},
+		{"/", 2}
 	};
 	string const& n = _expr.name;
 	if (m_functions.count(n))
@@ -164,6 +165,8 @@ z3::expr Z3Interface::toZ3Expr(Expression const& _expr)
 		return arguments[0] - arguments[1];
 	else if (n == "*")
 		return arguments[0] * arguments[1];
+	else if (n == "/")
+		return arguments[0] / arguments[1];
 	// Cannot reach here.
 	solAssert(false, "");
 	return arguments[0];

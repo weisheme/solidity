@@ -1052,7 +1052,7 @@ bool TypeChecker::visit(VariableDeclarationStatement const& _statement)
 						_statement.initialValue()->location(),
 						"Invalid rational " +
 						valueComponentType->toString() +
-						" (absolute value too large or divison by zero)."
+						" (absolute value too large or division by zero)."
 					);
 				else
 					solAssert(false, "");

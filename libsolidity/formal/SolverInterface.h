@@ -117,6 +117,10 @@ public:
 	{
 		return Expression("*", std::move(_a), std::move(_b));
 	}
+	friend Expression operator/(Expression _a, Expression _b)
+	{
+		return Expression("/", std::move(_a), std::move(_b));
+	}
 	Expression operator()(Expression _a) const
 	{
 		solAssert(arguments.empty(), "Attempted function application to non-function.");
