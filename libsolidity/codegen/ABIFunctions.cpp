@@ -146,16 +146,22 @@ string ABIFunctions::tupleDecoder(TypePointers const& _types, bool _fromMemory)
 				stackPos++;
 			}
 			bool dynamic = decodingTypes[i]->isDynamicallyEncoded();
-			Whiskers elementTempl(R"(
+			Whiskers elementTempl(
+				dynamic ?
+				R"(
 				{
-					let offset := )" + string(
-						dynamic ?
-						"<load>(add(headStart, <pos>))" :
-						"<pos>"
-					) + R"(
+					let offset := <load>(add(headStart, <pos>))
+					switch gt(offset, 0xffffffffffffffff) case 1 { revert(0, 0) }
 					<values> := <abiDecode>(add(headStart, offset), dataEnd)
 				}
-			)");
+				)" :
+				R"(
+				{
+					let offset := <pos>
+					<values> := <abiDecode>(add(headStart, offset), dataEnd)
+				}
+				)"
+			);
 			elementTempl("load", _fromMemory ? "mload" : "calldataload");
 			elementTempl("values", boost::algorithm::join(valueNamesLocal, ", "));
 			elementTempl("pos", to_string(headPos));
@@ -1145,11 +1151,12 @@ string ABIFunctions::abiDecodingFunctionArray(ArrayType const& _type, bool _from
 		if (dynamicBase)
 		{
 			templ("staticBoundsCheck", "");
+			templ("retrieveElementPos", "add(offset, " + load + "(src))");
 			// The dynamic bounds check might not be needed (because we have an additional check
 			// one level deeper), but we keep it in just in case. This at least prevents
 			// the part one level deeper from reading the length from an out of bounds position.
-			templ("dynamicBoundsCheck", "switch gt(elementPos, end) case 1 { revert(0, 0) }");
-			templ("retrieveElementPos", "add(offset, " + load + "(src))");
+			// Also it performs overflow checks for the data pointer.
+			templ("dynamicBoundsCheck", "switch or(slt(elementPos, offset), gt(elementPos, end)) case 1 { revert(0, 0) }");
 			templ("baseEncodedSize", "0x20");
 		}
 		else
@@ -1277,10 +1284,18 @@ string ABIFunctions::abiDecodingFunctionStruct(StructType const& _type, bool _fr
 			auto decodingType = member.type->decodingType();
 			solAssert(decodingType, "");
 			bool dynamic = decodingType->isDynamicallyEncoded();
-			Whiskers memberTempl(R"(
-				let offset := )" + string(dynamic ? "<load>(add(headStart, <pos>))" : "<pos>" ) + R"(
-				mstore(add(value, <memoryOffset>), <abiDecode>(add(headStart, offset), end))
-			)");
+			Whiskers memberTempl(
+				dynamic ?
+				R"(
+					let offset := <load>(add(headStart, <pos>))
+					switch gt(offset, 0xffffffffffffffff) case 1 { revert(0, 0) }
+					mstore(add(value, <memoryOffset>), <abiDecode>(add(headStart, offset), end))
+				)" :
+				R"(
+					let offset := <pos>
+					mstore(add(value, <memoryOffset>), <abiDecode>(add(headStart, offset), end))
+				)"
+			);
 			memberTempl("load", _fromMemory ? "mload" : "calldataload");
 			memberTempl("pos", to_string(headPos));
 			memberTempl("memoryOffset", toCompactHexWithPrefix(_type.memoryOffsetOfMember(member.name)));
