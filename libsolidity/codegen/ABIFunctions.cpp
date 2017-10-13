@@ -111,9 +111,9 @@ string ABIFunctions::tupleDecoder(TypePointers const& _types, bool _fromMemory)
 	if (_fromMemory)
 		functionName += "_fromMemory";
 
-	return createFunction(functionName, [&]() {
-		solAssert(!_types.empty(), "");
+	solAssert(!_types.empty(), "");
 
+	return createFunction(functionName, [&]() {
 		TypePointers decodingTypes;
 		for (auto const& t: _types)
 			decodingTypes.emplace_back(t->decodingType());
@@ -1078,7 +1078,14 @@ string ABIFunctions::abiDecodingFunction(Type const& _type, bool _fromMemory, bo
 		return abiDecodingFunctionStruct(*structType, _fromMemory);
 	else if (auto const* functionType = dynamic_cast<FunctionType const*>(decodingType.get()))
 		return abiDecodingFunctionFunctionType(*functionType, _fromMemory, _forUseOnStack);
+	else
+		return abiDecodingFunctionValueType(_type, _fromMemory);
+}
 
+string ABIFunctions::abiDecodingFunctionValueType(const Type& _type, bool _fromMemory)
+{
+	TypePointer decodingType = _type.decodingType();
+	solAssert(decodingType, "");
 	solAssert(decodingType->sizeOnStack() == 1, "");
 	solAssert(decodingType->isValueType(), "");
 	solAssert(decodingType->calldataEncodedSize() == 32, "");
@@ -1101,6 +1108,7 @@ string ABIFunctions::abiDecodingFunction(Type const& _type, bool _fromMemory, bo
 		templ("cleanup", cleanupFunction(_type, true));
 		return templ.render();
 	});
+
 }
 
 string ABIFunctions::abiDecodingFunctionArray(ArrayType const& _type, bool _fromMemory)
@@ -1611,7 +1619,8 @@ string ABIFunctions::allocationFunction()
 			function <functionName>(size) -> memPtr {
 				memPtr := mload(<freeMemoryPointer>)
 				let newFreePtr := add(memPtr, size)
-				switch lt(newFreePtr, memPtr) case 1 { revert(0, 0) }
+				// protect against overflow
+				switch or(gt(newFreePtr, 0xffffffffffffffff), lt(newFreePtr, memPtr)) case 1 { revert(0, 0) }
 				mstore(<freeMemoryPointer>, newFreePtr)
 			}
 		)")
