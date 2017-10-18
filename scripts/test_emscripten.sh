@@ -29,7 +29,7 @@
 set -e
 
 REPO_ROOT=$(cd $(dirname "$0")/.. && pwd)
-SOLJSON="$REPO_ROOT/build/libsolc/libsolc.js"
+SOLJSON="$REPO_ROOT/build/libsolc/soljson.js"
 
 DIR=$(mktemp -d)
 (
