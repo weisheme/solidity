@@ -458,11 +458,6 @@ protected:
 		sendMessage(*s_compiledWallet + args, true, _value);
 		BOOST_REQUIRE(!m_output.empty());
 	}
-
-	Address emptyAccount()
-	{
-		return Address(m_rpc.accountCreate());
-	}
 };
 
 /// This is a test suite that tests optimised code!
@@ -564,12 +559,12 @@ BOOST_AUTO_TEST_CASE(multisig_value_transfer)
 	BOOST_REQUIRE(callContractFunction("addOwner(address)", h256(account(3), h256::AlignRight)) == encodeArgs());
 	// 4 owners, set required to 3
 	BOOST_REQUIRE(callContractFunction("changeRequirement(uint256)", u256(3)) == encodeArgs());
-	Address destination = emptyAccount();
+	Address destination = Address("0x5c6d6026d3fb35cd7175fd0054ae8df50d8f8b41");
 	BOOST_CHECK_EQUAL(balanceAt(destination), 0);
 	m_sender = account(0);
 	sendEther(account(1), 10 * ether);
 	m_sender = account(1);
-	auto ophash = callContractFunction("execute(address,uint256,bytes)", h256(destination), 100, 0x60, 0x00);
+	auto ophash = callContractFunction("execute(address,uint256,bytes)", destination, 100, 0x60, 0x00);
 	BOOST_CHECK_EQUAL(balanceAt(destination), 0);
 	m_sender = account(0);
 	sendEther(account(2), 10 * ether);
@@ -627,12 +622,12 @@ BOOST_AUTO_TEST_CASE(revoke_transaction)
 	BOOST_REQUIRE(callContractFunction("changeRequirement(uint256)", u256(3)) == encodeArgs());
 	// create a transaction
 	Address deployer = m_sender;
-	Address destination = emptyAccount();
+	Address destination = Address("0x5c6d6026d3fb35cd7175fd0054ae8df50d8f8b41");
 	BOOST_CHECK_EQUAL(balanceAt(destination), 0);
 	m_sender = account(0);
 	sendEther(account(1), 10 * ether);
 	m_sender = account(1);
-	auto opHash = callContractFunction("execute(address,uint256,bytes)", h256(destination), 100, 0x60, 0x00);
+	auto opHash = callContractFunction("execute(address,uint256,bytes)", destination, 100, 0x60, 0x00);
 	BOOST_CHECK_EQUAL(balanceAt(destination), 0);
 	m_sender = account(0);
 	sendEther(account(2), 10 * ether);
@@ -667,12 +662,12 @@ BOOST_AUTO_TEST_CASE(daylimit)
 	BOOST_REQUIRE(callContractFunction("changeRequirement(uint256)", u256(3)) == encodeArgs());
 
 	// try to send tx over daylimit
-	Address destination = emptyAccount();
+	Address destination = Address("0x5c6d6026d3fb35cd7175fd0054ae8df50d8f8b41");
 	BOOST_CHECK_EQUAL(balanceAt(destination), 0);
 	sendEther(account(1), 10 * ether);
 	m_sender = account(1);
 	BOOST_REQUIRE(
-		callContractFunction("execute(address,uint256,bytes)", h256(destination), 150, 0x60, 0x00) !=
+		callContractFunction("execute(address,uint256,bytes)", destination, 150, 0x60, 0x00) !=
 		encodeArgs(u256(0))
 	);
 	BOOST_CHECK_EQUAL(balanceAt(destination), 0);
@@ -681,7 +676,7 @@ BOOST_AUTO_TEST_CASE(daylimit)
 	sendEther(account(4), 10 * ether);
 	m_sender = account(4);
 	BOOST_REQUIRE(
-		callContractFunction("execute(address,uint256,bytes)", h256(destination), 90, 0x60, 0x00) ==
+		callContractFunction("execute(address,uint256,bytes)", destination, 90, 0x60, 0x00) ==
 		encodeArgs(u256(0))
 	);
 	BOOST_CHECK_EQUAL(balanceAt(destination), 0);
@@ -689,7 +684,7 @@ BOOST_AUTO_TEST_CASE(daylimit)
 	m_sender = account(0);
 	sendEther(account(1), 10 * ether);
 	BOOST_REQUIRE(
-		callContractFunction("execute(address,uint256,bytes)", h256(destination), 90, 0x60, 0x00) ==
+		callContractFunction("execute(address,uint256,bytes)", destination, 90, 0x60, 0x00) ==
 		encodeArgs(u256(0))
 	);
 	BOOST_CHECK_EQUAL(balanceAt(destination), 90);
