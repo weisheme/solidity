@@ -564,7 +564,7 @@ BOOST_AUTO_TEST_CASE(multisig_value_transfer)
 	m_sender = account(0);
 	sendEther(account(1), 10 * ether);
 	m_sender = account(1);
-	auto ophash = callContractFunction("execute(address,uint256,bytes)", destination, 100, 0x60, 0x00);
+	auto ophash = callContractFunction("execute(address,uint256,bytes)", h256(destination), 100, 0x60, 0x00);
 	BOOST_CHECK_EQUAL(balanceAt(destination), 0);
 	m_sender = account(0);
 	sendEther(account(2), 10 * ether);
@@ -627,7 +627,7 @@ BOOST_AUTO_TEST_CASE(revoke_transaction)
 	m_sender = account(0);
 	sendEther(account(1), 10 * ether);
 	m_sender = account(1);
-	auto opHash = callContractFunction("execute(address,uint256,bytes)", destination, 100, 0x60, 0x00);
+	auto opHash = callContractFunction("execute(address,uint256,bytes)", h256(destination), 100, 0x60, 0x00);
 	BOOST_CHECK_EQUAL(balanceAt(destination), 0);
 	m_sender = account(0);
 	sendEther(account(2), 10 * ether);
@@ -667,7 +667,7 @@ BOOST_AUTO_TEST_CASE(daylimit)
 	sendEther(account(1), 10 * ether);
 	m_sender = account(1);
 	BOOST_REQUIRE(
-		callContractFunction("execute(address,uint256,bytes)", destination, 150, 0x60, 0x00) !=
+		callContractFunction("execute(address,uint256,bytes)", h256(destination), 150, 0x60, 0x00) !=
 		encodeArgs(u256(0))
 	);
 	BOOST_CHECK_EQUAL(balanceAt(destination), 0);
@@ -676,7 +676,7 @@ BOOST_AUTO_TEST_CASE(daylimit)
 	sendEther(account(4), 10 * ether);
 	m_sender = account(4);
 	BOOST_REQUIRE(
-		callContractFunction("execute(address,uint256,bytes)", destination, 90, 0x60, 0x00) ==
+		callContractFunction("execute(address,uint256,bytes)", h256(destination), 90, 0x60, 0x00) ==
 		encodeArgs(u256(0))
 	);
 	BOOST_CHECK_EQUAL(balanceAt(destination), 0);
@@ -684,7 +684,7 @@ BOOST_AUTO_TEST_CASE(daylimit)
 	m_sender = account(0);
 	sendEther(account(1), 10 * ether);
 	BOOST_REQUIRE(
-		callContractFunction("execute(address,uint256,bytes)", destination, 90, 0x60, 0x00) ==
+		callContractFunction("execute(address,uint256,bytes)", h256(destination), 90, 0x60, 0x00) ==
 		encodeArgs(u256(0))
 	);
 	BOOST_CHECK_EQUAL(balanceAt(destination), 90);
